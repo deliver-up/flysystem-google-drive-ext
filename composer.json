@@ -1,5 +1,5 @@
 {
-    "name": "Deliverup/flysystem-google-drive-ext",
+    "name": "deliverup/flysystem-google-drive-ext",
     "description": "Flysystem adapter for Google Drive with seamless virtual<=>display path translation",
     "keywords": [
         "flysystem",

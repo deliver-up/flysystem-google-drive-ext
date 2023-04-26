@@ -1,6 +1,6 @@
 <?php
 
-namespace Masbug\Flysystem;
+namespace Deliverup\Flysystem;
 
 /*
  * Modified work Copyright (c) 2017 Mitja Spes

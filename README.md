@@ -1,11 +1,11 @@
 # Flysystem adapter for Google Drive with seamless virtual<=>display path translation
 
 [![Flysystem API version](https://img.shields.io/badge/Flysystem%20API-V2-blue?style=flat-square)](https://github.com/thephpleague/flysystem/)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/masbug/flysystem-google-drive-ext.svg?style=flat-square)](https://packagist.org/packages/masbug/flysystem-google-drive-ext)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/Deliverup/flysystem-google-drive-ext.svg?style=flat-square)](https://packagist.org/packages/Deliverup/flysystem-google-drive-ext)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://img.shields.io/travis/com/masbug/flysystem-google-drive-ext/2.x.svg?style=flat-square)](https://travis-ci.com/masbug/flysystem-google-drive-ext)
+[![Build Status](https://img.shields.io/travis/com/Deliverup/flysystem-google-drive-ext/2.x.svg?style=flat-square)](https://travis-ci.com/Deliverup/flysystem-google-drive-ext)
 [![StyleCI](https://styleci.io/repos/113434522/shield?branch=2.x)](https://styleci.io/repos/113434522)
-[![Total Downloads](https://img.shields.io/packagist/dt/masbug/flysystem-google-drive-ext.svg?style=flat-square)](https://packagist.org/packages/masbug/flysystem-google-drive-ext)
+[![Total Downloads](https://img.shields.io/packagist/dt/Deliverup/flysystem-google-drive-ext.svg?style=flat-square)](https://packagist.org/packages/Deliverup/flysystem-google-drive-ext)
 
 Google uses unique IDs for each folder and file. This makes it difficult to integrate with other storage services which use normal paths.
 
@@ -18,13 +18,13 @@ For example: virtual path `/Xa3X9GlR6EmbnY1RLVTk5VUtOVkk/0B3X9GlR6EmbnY1RLVTk5VU
 - For **Flysystem V2/V3** or **Laravel >= 9.x.x**
 
 ```bash
-composer require masbug/flysystem-google-drive-ext
+composer require Deliverup/flysystem-google-drive-ext
 ```
 
 - For **Flysystem V1** or **Laravel <= 8.x.x** use 1.x.x version of the package
 
 ```bash
-composer require masbug/flysystem-google-drive-ext:"^1.0.0"
+composer require Deliverup/flysystem-google-drive-ext:"^1.0.0"
 ```
 
 ## Getting Google Keys
@@ -48,10 +48,10 @@ $client->setApplicationName('My Google Drive App');
 $service = new \Google\Service\Drive($client);
 
 // variant 1
-$adapter = new \Masbug\Flysystem\GoogleDriveAdapter($service, 'My_App_Root');
+$adapter = new \Deliverup\Flysystem\GoogleDriveAdapter($service, 'My_App_Root');
 
 // variant 2: with extra options and query parameters
-$adapter2 = new \Masbug\Flysystem\GoogleDriveAdapter(
+$adapter2 = new \Deliverup\Flysystem\GoogleDriveAdapter(
     $service,
     'My_App_Root',
     [
@@ -66,7 +66,7 @@ $adapter2 = new \Masbug\Flysystem\GoogleDriveAdapter(
 );
 
 // variant 3: connect to team drive
-$adapter3 = new \Masbug\Flysystem\GoogleDriveAdapter(
+$adapter3 = new \Deliverup\Flysystem\GoogleDriveAdapter(
     $service,
     'My_App_Root',
     [
@@ -222,7 +222,7 @@ class AppServiceProvider extends ServiceProvider { // can be a custom ServicePro
                 $client->refreshToken($config['refreshToken']);
                 
                 $service = new \Google\Service\Drive($client);
-                $adapter = new \Masbug\Flysystem\GoogleDriveAdapter($service, $config['folder'] ?? '/', $options);
+                $adapter = new \Deliverup\Flysystem\GoogleDriveAdapter($service, $config['folder'] ?? '/', $options);
                 $driver = new \League\Flysystem\Filesystem($adapter);
 
                 return new \Illuminate\Filesystem\FilesystemAdapter($driver, $adapter);

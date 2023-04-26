@@ -1,5 +1,5 @@
 {
-    "name": "masbug/flysystem-google-drive-ext",
+    "name": "Deliverup/flysystem-google-drive-ext",
     "description": "Flysystem adapter for Google Drive with seamless virtual<=>display path translation",
     "keywords": [
         "flysystem",
@@ -37,7 +37,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Masbug\\Flysystem\\": "src"
+            "Deliverup\\Flysystem\\": "src"
         }
     },
     "config": {

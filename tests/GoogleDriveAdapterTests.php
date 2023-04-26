@@ -31,12 +31,12 @@ class GoogleDriveAdapterTests extends FilesystemAdapterTestCase
     protected static function createFilesystemAdapter(): FilesystemAdapter
     {
         $file = __DIR__.'/../google-drive-service-account.json';
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             self::markTestSkipped("No google service account file {$file} found in project root.");
         }
         try {
             $config = json_decode(file_get_contents($file), true);
-            if (!$config) {
+            if (! $config) {
                 self::markTestSkipped("Format json error in {$file}.");
             }
             if (empty($config['GOOGLE_DRIVE_CLIENT_ID'] ?? null) ||
@@ -46,7 +46,7 @@ class GoogleDriveAdapterTests extends FilesystemAdapterTestCase
                 self::markTestSkipped("No google service config found in {$file}.");
             }
             $options = ['usePermanentDelete' => true];
-            if (!empty($config['GOOGLE_DRIVE_TEAM_DRIVE_ID'] ?? null)) {
+            if (! empty($config['GOOGLE_DRIVE_TEAM_DRIVE_ID'] ?? null)) {
                 $options['teamDriveId'] = $config['GOOGLE_DRIVE_TEAM_DRIVE_ID'];
             }
             $client = new \Google\Client();
@@ -54,6 +54,7 @@ class GoogleDriveAdapterTests extends FilesystemAdapterTestCase
             $client->setClientSecret($config['GOOGLE_DRIVE_CLIENT_SECRET']);
             $client->refreshToken($config['GOOGLE_DRIVE_REFRESH_TOKEN']);
             $service = new \Google\Service\Drive($client);
+
             return new GoogleDriveAdapter($service, 'tests/', $options);
         } catch (\Exception $e) {
             self::markTestSkipped($e->getMessage());

@@ -38,50 +38,35 @@ use Psr\Http\Message\StreamInterface;
  */
 class StreamableUpload
 {
-    const UPLOAD_MEDIA_TYPE = 'media';
-    const UPLOAD_MULTIPART_TYPE = 'multipart';
-    const UPLOAD_RESUMABLE_TYPE = 'resumable';
+    final public const UPLOAD_MEDIA_TYPE = 'media';
 
-    /** @var string */
-    private $mimeType;
+    final public const UPLOAD_MULTIPART_TYPE = 'multipart';
 
-    /** @var null|StreamInterface */
-    private $data;
+    final public const UPLOAD_RESUMABLE_TYPE = 'resumable';
 
-    /** @var bool */
-    private $resumable;
+    private ?\Psr\Http\Message\StreamInterface $data = null;
 
     /** @var int */
     private $chunkSize;
 
-    /** @var int|string */
-    private $size;
+    private string|int $size = '*';
 
     /** @var string */
     private $resumeUri;
 
     /** @var int */
-    private $progress;
-
-    /** @var Client */
-    private $client;
-
-    /** @var \Psr\Http\Message\RequestInterface */
-    private $request;
+    private $progress = 0;
 
     /** @var string */
     private $boundary;
 
     /**
      * Result code from last HTTP call
-     *
-     * @var int
      */
-    private $httpResultCode;
+    private ?int $httpResultCode = null;
 
     /**
      * @param  Client  $client
-     * @param  RequestInterface  $request
      * @param  string  $mimeType
      * @param  null|string|resource|StreamInterface  $data  Data you want to upload
      * @param  bool  $resumable
@@ -89,21 +74,15 @@ class StreamableUpload
      *                               Only used if resumable=True.
      */
     public function __construct(
-        $client,
-        RequestInterface $request,
-        $mimeType,
+        private $client,
+        private RequestInterface $request,
+        private $mimeType,
         $data,
-        $resumable = false,
+        private $resumable = false,
         $chunkSize = false
     ) {
-        $this->client = $client;
-        $this->request = $request;
-        $this->mimeType = $mimeType;
         $this->data = $data !== null ? Utils::streamFor($data) : null;
-        $this->resumable = $resumable;
         $this->chunkSize = is_bool($chunkSize) ? 0 : $chunkSize;
-        $this->progress = 0;
-        $this->size = '*';
         if ($this->data !== null) {
             $size = $this->data->getSize();
             if ($size !== null) {
@@ -141,7 +120,7 @@ class StreamableUpload
      *                                                   If false it will use $this->data set at construct time.
      * @return false|mixed
      */
-    public function nextChunk($chunk = false)
+    public function nextChunk(null|bool|string|StreamInterface $chunk = false)
     {
         $resumeUri = $this->getResumeUri();
 
@@ -149,7 +128,7 @@ class StreamableUpload
             if ($this->chunkSize < 1) {
                 throw new \InvalidArgumentException('Invalid chunk size');
             }
-            if (!$this->data instanceof StreamInterface) {
+            if (! $this->data instanceof StreamInterface) {
                 throw new \InvalidArgumentException('Invalid data stream');
             }
             $this->data->seek($this->progress, SEEK_SET);
@@ -171,9 +150,9 @@ class StreamableUpload
 
             $lastBytePos = $this->progress + $size - 1;
             $headers = [
-                'content-range'  => 'bytes '.$this->progress.'-'.$lastBytePos.'/'.$this->size,
+                'content-range' => 'bytes '.$this->progress.'-'.$lastBytePos.'/'.$this->size,
                 'content-length' => $size,
-                'expect'         => '',
+                'expect' => '',
             ];
         }
 
@@ -241,7 +220,7 @@ class StreamableUpload
     {
         $this->resumeUri = $resumeUri;
         $headers = [
-            'content-range'  => 'bytes */'.$this->size,
+            'content-range' => 'bytes */'.$this->size,
             'content-length' => 0,
         ];
         $httpRequest = new Request(
@@ -255,6 +234,7 @@ class StreamableUpload
 
     /**
      * @return \Psr\Http\Message\RequestInterface $request
+     *
      * @visible for testing
      */
     private function process()
@@ -265,7 +245,7 @@ class StreamableUpload
         $postBody = '';
         $contentType = false;
 
-        $meta = (string)$request->getBody();
+        $meta = (string) $request->getBody();
         $meta = is_string($meta) ? json_decode($meta, true) : $meta;
 
         $uploadType = $this->getUploadType($meta);
@@ -285,7 +265,7 @@ class StreamableUpload
             } else {
                 if (self::UPLOAD_MULTIPART_TYPE == $uploadType) {
                     // This is a multipart/related upload.
-                    $boundary = $this->boundary ?: /* @scrutinizer ignore-call */ mt_rand();
+                    $boundary = $this->boundary ?: /* @scrutinizer ignore-call */ random_int(0, mt_getrandmax());
                     $boundary = str_replace('"', '', $boundary);
                     $contentType = 'multipart/related; boundary='.$boundary;
                     $related = "--$boundary\r\n";
@@ -316,8 +296,8 @@ class StreamableUpload
      * - media (UPLOAD_MEDIA_TYPE)
      * - multipart (UPLOAD_MULTIPART_TYPE)
      *
-     * @param $meta
      * @return string
+     *
      * @visible for testing
      */
     public function getUploadType($meta)
@@ -347,10 +327,10 @@ class StreamableUpload
         $body = $this->request->getBody();
         if ($body) {
             $headers = [
-                'content-type'          => 'application/json; charset=UTF-8',
-                'content-length'        => $body->getSize(),
+                'content-type' => 'application/json; charset=UTF-8',
+                'content-length' => $body->getSize(),
                 'x-upload-content-type' => $this->mimeType,
-                'expect'                => '',
+                'expect' => '',
             ];
             if (is_int($this->size)) {
                 $headers['x-upload-content-length'] = $this->size;
@@ -370,7 +350,7 @@ class StreamableUpload
         }
 
         $message = $code;
-        $body = json_decode((string)$this->request->getBody(), true);
+        $body = json_decode((string) $this->request->getBody(), true);
         if (isset($body['error']['errors'])) {
             $message .= ': ';
             foreach ($body['error']['errors'] as $error) {
@@ -387,8 +367,8 @@ class StreamableUpload
 
     private function transformToUploadUrl()
     {
-        $parts = parse_url((string)$this->request->getUri());
-        if (!isset($parts['path'])) {
+        $parts = parse_url((string) $this->request->getUri());
+        if (! isset($parts['path'])) {
             $parts['path'] = '';
         }
         $parts['path'] = '/upload'.$parts['path'];

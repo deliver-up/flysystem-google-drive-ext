@@ -8,3 +8,7 @@ build
 vendor
 .phpunit.result.cache
 .php_cs.cache
+.env.docker
+.idea
+vendor
+composer.lock
